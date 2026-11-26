@@ -178,7 +178,7 @@ TRANSLATIONS = {
         "CONTROL CENTER / BETA.3": "ЦЕНТР КЕРУВАННЯ / BETA.3",
         "Welcome to CryptoLab.": "Ласкаво просимо до CryptoLab.",
         "A local workspace for cryptography experiments and code inspection.": "Локальне середовище для експериментів із криптографією та аналізу коду.",
-        "06": "06", "LAB MODULES": "МОДУЛІ ЛАБОРАТОРІЇ",
+        "05": "05", "LAB MODULES": "МОДУЛІ ЛАБОРАТОРІЇ",
         "08+": "08+", "HASH OPTIONS": "АЛГОРИТМИ ХЕШУВАННЯ",
         "BETA.3": "BETA.3", "RELEASE": "ВЕРСІЯ",
         "WHAT'S NEW IN BETA.3": "ЩО НОВОГО У BETA.3",
