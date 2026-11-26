@@ -396,7 +396,7 @@ class CryptoLab(QMainWindow):
     def dashboard_page(self):
         page, layout = self.shell("CONTROL CENTER / BETA.3", "Welcome to CryptoLab.", "A local workspace for cryptography experiments and code inspection.")
         grid = QGridLayout()
-        for i, (num, caption) in enumerate([("06", "LAB MODULES"), ("08+", "HASH OPTIONS"), ("BETA.3", "RELEASE")]):
+        for i, (num, caption) in enumerate([("05", "LAB MODULES"), ("08+", "HASH OPTIONS"), ("BETA.3", "RELEASE")]):
             box, b = card()
             b.addWidget(label(num, "Metric"))
             b.addWidget(label(caption, "Eyebrow"))
