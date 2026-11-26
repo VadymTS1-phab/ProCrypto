@@ -904,7 +904,7 @@ class CryptoLab(QMainWindow):
         side.setContentsMargins(17, 24, 17, 18)
         side.setSpacing(9)
         side.addWidget(label("◈  CRYPTOLAB", "Brand"))
-        side.addWidget(label("SECURITY TOOLKIT / BETA.3", "Eyebrow"))
+        side.addWidget(label(f"SECURITY TOOLKIT / {APP_VERSION}", "Eyebrow"))
         side.addSpacing(12)
         side.addWidget(label("LANGUAGE", "Eyebrow"))
         self.language_selector = QComboBox()
