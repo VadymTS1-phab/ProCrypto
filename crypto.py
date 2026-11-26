@@ -657,7 +657,7 @@ TRANSLATIONS = {
     "en": {},
     "uk": {
         "◈  CRYPTOLAB": "◈  CRYPTOLAB",
-        "SECURITY TOOLKIT / BETA.3": "НАБІР ІНСТРУМЕНТІВ / BETA.3",
+        "SECURITY TOOLKIT / {APP_VERSION}": "НАБІР ІНСТРУМЕНТІВ / APP_VERSION",
         "LANGUAGE": "МОВА",
         "LOCAL MODE • OFFLINE": "ЛОКАЛЬНИЙ РЕЖИМ • ОФЛАЙН",
         "CRYPTOGRAPHY / LEARNING ENVIRONMENT": "КРИПТОГРАФІЯ / НАВЧАЛЬНЕ СЕРЕДОВИЩЕ",
@@ -1012,16 +1012,16 @@ class CryptoLab(QMainWindow):
         return page, layout
 
     def dashboard_page(self):
-        page, layout = self.shell("CONTROL CENTER / BETA.3", "Welcome to CryptoLab.", "A local workspace for cryptography experiments and code inspection.")
+        page, layout = self.shell(f"CONTROL CENTER / {APP_VERSION}", "Welcome to CryptoLab.", "A local workspace for cryptography experiments and code inspection.")
         grid = QGridLayout()
-        for i, (num, caption) in enumerate([("05", "LAB MODULES"), ("08+", "HASH OPTIONS"), ("BETA.3", "RELEASE")]):
+        for i, (num, caption) in enumerate([("05", "LAB MODULES"), ("08+", "HASH OPTIONS"), (APP_VERSION, "RELEASE")]):
             box, b = card()
             b.addWidget(label(num, "Metric"))
             b.addWidget(label(caption, "Eyebrow"))
             grid.addWidget(box, 0, i)
         layout.addLayout(grid)
         box, b = card()
-        b.addWidget(label("WHAT'S NEW IN BETA.3", "Eyebrow"))
+        b.addWidget(label(f"WHAT'S NEW IN {APP_VERSION}", "Eyebrow"))
         b.addWidget(label("More classical ciphers, modern authenticated encryption (optional dependency), additional hash functions and password KDFs, key formats, plus Python bytecode inspection.", "Muted"))
         b.addWidget(label("AUTHOR", "Eyebrow"))
         b.addWidget(label(f"{AUTHOR}  •  © 2026. All rights reserved.", "Muted"))
