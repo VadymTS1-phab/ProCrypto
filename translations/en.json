@@ -6,7 +6,6 @@
   },
   "ui": {
     "◈  CRYPTOLAB": "◈  CRYPTOLAB",
-    "LANGUAGE": "LANGUAGE",
     "LOCAL MODE • OFFLINE": "LOCAL MODE • OFFLINE",
     "CRYPTOGRAPHY / LEARNING ENVIRONMENT": "CRYPTOGRAPHY / LEARNING ENVIRONMENT",
     "●  SYSTEM READY": "●  SYSTEM READY",
@@ -127,9 +126,11 @@
     "SECURITY TOOLKIT / {version}": "SECURITY TOOLKIT / {version}",
     "CONTROL CENTER / {version}": "CONTROL CENTER / {version}",
     "WHAT'S NEW IN {version}": "WHAT'S NEW IN {version}",
-    "• Fixed hashing: MD5, SHA-1, SHA3-256 and SHA3-512 no longer fail.\n• Translations moved to separate JSON files; Chinese and Spanish added.\n• Dialogs, hints and error messages now follow the selected language.": "• Fixed hashing: MD5, SHA-1, SHA3-256 and SHA3-512 no longer fail.\n• Translations moved to separate JSON files; Chinese and Spanish added.\n• Dialogs, hints and error messages now follow the selected language.",
+    "• Fixed hashing: MD5, SHA-1, SHA3-256 and SHA3-512 no longer fail.\n• Translations moved to separate JSON files; Chinese and Spanish added.\n• Dialogs, hints and error messages now follow the selected language.\n• Compact language menu in the corner; sidebar fits long translations; Code Laboratory output can be cleared.": "• Fixed hashing: MD5, SHA-1, SHA3-256 and SHA3-512 no longer fail.\n• Translations moved to separate JSON files; Chinese and Spanish added.\n• Dialogs, hints and error messages now follow the selected language.\n• Compact language menu in the corner; sidebar fits long translations; Code Laboratory output can be cleared.",
     "ALSO IN BETA.4": "ALSO IN BETA.4",
-    "• Key panel with live validation and compatible key generation.\n• Fixed AES-256-GCM, Fernet, XOR and Atbash handling.\n• Larger Enigma settings; Inter font with Noto Sans fallback.": "• Key panel with live validation and compatible key generation.\n• Fixed AES-256-GCM, Fernet, XOR and Atbash handling.\n• Larger Enigma settings; Inter font with Noto Sans fallback."
+    "• Key panel with live validation and compatible key generation.\n• Fixed AES-256-GCM, Fernet, XOR and Atbash handling.\n• Larger Enigma settings; Inter font with Noto Sans fallback.": "• Key panel with live validation and compatible key generation.\n• Fixed AES-256-GCM, Fernet, XOR and Atbash handling.\n• Larger Enigma settings; Inter font with Noto Sans fallback.",
+    "Clear output": "Clear output",
+    "Language": "Language"
   },
   "messages": {
     "input.empty": "Enter some text first.",

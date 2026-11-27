@@ -6,7 +6,6 @@
   },
   "ui": {
     "◈  CRYPTOLAB": "◈  CRYPTOLAB",
-    "LANGUAGE": "МОВА",
     "LOCAL MODE • OFFLINE": "ЛОКАЛЬНИЙ РЕЖИМ • ОФЛАЙН",
     "CRYPTOGRAPHY / LEARNING ENVIRONMENT": "КРИПТОГРАФІЯ / НАВЧАЛЬНЕ СЕРЕДОВИЩЕ",
     "●  SYSTEM READY": "●  СИСТЕМА ГОТОВА",
@@ -127,9 +126,11 @@
     "SECURITY TOOLKIT / {version}": "НАБІР ІНСТРУМЕНТІВ / {version}",
     "CONTROL CENTER / {version}": "ЦЕНТР КЕРУВАННЯ / {version}",
     "WHAT'S NEW IN {version}": "ЩО НОВОГО У {version}",
-    "• Fixed hashing: MD5, SHA-1, SHA3-256 and SHA3-512 no longer fail.\n• Translations moved to separate JSON files; Chinese and Spanish added.\n• Dialogs, hints and error messages now follow the selected language.": "• Виправлено хешування: MD5, SHA-1, SHA3-256 і SHA3-512 більше не дають помилок.\n• Переклади винесено в окремі JSON-файли; додано китайську та іспанську.\n• Діалоги, підказки й повідомлення про помилки тепер відповідають обраній мові.",
+    "• Fixed hashing: MD5, SHA-1, SHA3-256 and SHA3-512 no longer fail.\n• Translations moved to separate JSON files; Chinese and Spanish added.\n• Dialogs, hints and error messages now follow the selected language.\n• Compact language menu in the corner; sidebar fits long translations; Code Laboratory output can be cleared.": "• Виправлено хешування: MD5, SHA-1, SHA3-256 і SHA3-512 більше не дають помилок.\n• Переклади винесено в окремі JSON-файли; додано китайську та іспанську.\n• Діалоги, підказки й повідомлення про помилки тепер відповідають обраній мові.\n• Компактне меню мови в куті; бічна панель вміщує довгі переклади; результат у Лабораторії коду можна очистити.",
     "ALSO IN BETA.4": "ТАКОЖ У BETA.4",
-    "• Key panel with live validation and compatible key generation.\n• Fixed AES-256-GCM, Fernet, XOR and Atbash handling.\n• Larger Enigma settings; Inter font with Noto Sans fallback.": "• Панель ключів із живою перевіркою та генерацією сумісного ключа.\n• Виправлено роботу AES-256-GCM, Fernet, XOR та Atbash.\n• Збільшені налаштування Енігми; шрифт Inter із запасним Noto Sans."
+    "• Key panel with live validation and compatible key generation.\n• Fixed AES-256-GCM, Fernet, XOR and Atbash handling.\n• Larger Enigma settings; Inter font with Noto Sans fallback.": "• Панель ключів із живою перевіркою та генерацією сумісного ключа.\n• Виправлено роботу AES-256-GCM, Fernet, XOR та Atbash.\n• Збільшені налаштування Енігми; шрифт Inter із запасним Noto Sans.",
+    "Clear output": "Очистити результат",
+    "Language": "Мова"
   },
   "messages": {
     "input.empty": "Спочатку введіть текст.",
