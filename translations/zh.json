@@ -6,7 +6,6 @@
   },
   "ui": {
     "◈  CRYPTOLAB": "◈  CRYPTOLAB",
-    "LANGUAGE": "语言",
     "LOCAL MODE • OFFLINE": "本地模式 • 离线",
     "CRYPTOGRAPHY / LEARNING ENVIRONMENT": "密码学 / 学习环境",
     "●  SYSTEM READY": "●  系统就绪",
@@ -127,9 +126,11 @@
     "SECURITY TOOLKIT / {version}": "安全工具包 / {version}",
     "CONTROL CENTER / {version}": "控制中心 / {version}",
     "WHAT'S NEW IN {version}": "{version} 更新内容",
-    "• Fixed hashing: MD5, SHA-1, SHA3-256 and SHA3-512 no longer fail.\n• Translations moved to separate JSON files; Chinese and Spanish added.\n• Dialogs, hints and error messages now follow the selected language.": "• 修复哈希计算：MD5、SHA-1、SHA3-256 和 SHA3-512 不再报错。\n• 翻译已移至独立的 JSON 文件；新增中文和西班牙语。\n• 对话框、提示和错误信息现在会跟随所选语言。",
+    "• Fixed hashing: MD5, SHA-1, SHA3-256 and SHA3-512 no longer fail.\n• Translations moved to separate JSON files; Chinese and Spanish added.\n• Dialogs, hints and error messages now follow the selected language.\n• Compact language menu in the corner; sidebar fits long translations; Code Laboratory output can be cleared.": "• 修复哈希计算：MD5、SHA-1、SHA3-256 和 SHA3-512 不再报错。\n• 翻译已移至独立的 JSON 文件；新增中文和西班牙语。\n• 对话框、提示和错误信息现在会跟随所选语言。\n• 语言菜单改为右上角的紧凑图标；侧边栏可容纳较长的译文；代码实验室的输出可以清除。",
     "ALSO IN BETA.4": "BETA.4 同时包含",
-    "• Key panel with live validation and compatible key generation.\n• Fixed AES-256-GCM, Fernet, XOR and Atbash handling.\n• Larger Enigma settings; Inter font with Noto Sans fallback.": "• 新增密钥面板，支持实时校验并生成兼容的密钥。\n• 修复 AES-256-GCM、Fernet、XOR 和 Atbash 的处理。\n• 放大了恩尼格玛设置；使用 Inter 字体，并以 Noto Sans 作为备用。"
+    "• Key panel with live validation and compatible key generation.\n• Fixed AES-256-GCM, Fernet, XOR and Atbash handling.\n• Larger Enigma settings; Inter font with Noto Sans fallback.": "• 新增密钥面板，支持实时校验并生成兼容的密钥。\n• 修复 AES-256-GCM、Fernet、XOR 和 Atbash 的处理。\n• 放大了恩尼格玛设置；使用 Inter 字体，并以 Noto Sans 作为备用。",
+    "Clear output": "清除输出",
+    "Language": "语言"
   },
   "messages": {
     "input.empty": "请先输入文本。",

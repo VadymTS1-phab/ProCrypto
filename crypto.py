@@ -12,14 +12,16 @@ import types
 from datetime import datetime
 from pathlib import Path
 
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont, QFontDatabase
+from PySide6.QtCore import Qt, QSize, QRectF, QPointF
+from PySide6.QtGui import (
+    QAction, QColor, QFont, QFontDatabase, QFontMetrics, QIcon, QPainter, QPen, QPixmap
+)
 from i18n import I18n
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QFrame, QLabel, QPushButton,
     QLineEdit, QTextEdit, QVBoxLayout, QHBoxLayout, QStackedWidget,
     QComboBox, QSpinBox, QCheckBox, QMessageBox, QGridLayout, QFileDialog,
-    QScrollArea
+    QScrollArea, QToolButton, QMenu
 )
 
 APP_VERSION = "Beta.5"
@@ -48,6 +50,13 @@ QLineEdit:disabled,QComboBox:disabled { background:#0a1222; color:#5c6b86; }
 QComboBox#EnigmaBox { font-size:20px; font-weight:800; padding:10px 14px; min-height:30px; }
 QLineEdit#EnigmaPlug { font-size:18px; font-weight:700; padding:12px 14px; }
 QCheckBox { color:#aab8d0; spacing:8px; }
+QToolButton#LangButton { background:#142036; color:#cbd7ed; border:1px solid #2b3b5a; border-radius:10px; padding:7px; }
+QToolButton#LangButton:hover, QToolButton#LangButton:pressed { background:#223454; border-color:#3c6483; }
+QToolButton#LangButton::menu-indicator { image:none; width:0px; }
+QMenu { background:#121d33; color:#e8eefc; border:1px solid #2b3c5b; border-radius:10px; padding:6px; }
+QMenu::item { padding:8px 22px 8px 14px; border-radius:6px; }
+QMenu::item:selected { background:#172f40; color:#65e2d4; }
+QToolTip { background:#121d33; color:#e8eefc; border:1px solid #2b3c5b; padding:4px 6px; }
 QScrollArea { border:none; background:transparent; }
 QScrollBar:vertical { background:#0b1020; width:10px; margin:0; }
 QScrollBar::handle:vertical { background:#2b3c5b; border-radius:5px; min-height:30px; }
@@ -108,6 +117,34 @@ def label(text, name=None):
 
 def field(text):
     return label(text.upper(), "Eyebrow")
+
+SIDEBAR_WIDTH = 250
+SIDEBAR_MARGIN = 17          # left/right margin inside the sidebar
+NAV_PADDING = 12             # left/right padding of a navigation button (see APP_STYLE)
+
+
+def make_globe_icon(color="#9eacc5", size=64):
+    """Small globe drawn with QPainter, so it needs no image file or emoji font."""
+    pixmap = QPixmap(size, size)
+    pixmap.fill(Qt.GlobalColor.transparent)
+    p = QPainter(pixmap)
+    p.setRenderHint(QPainter.RenderHint.Antialiasing)
+    pen = QPen(QColor(color))
+    pen.setWidthF(size / 14)
+    p.setPen(pen)
+    p.setBrush(Qt.BrushStyle.NoBrush)
+    m = size * 0.10
+    r = size / 2 - m
+    c = size / 2
+    p.drawEllipse(QRectF(m, m, 2 * r, 2 * r))                      # outline
+    p.drawEllipse(QRectF(c - r * 0.42, m, r * 0.84, 2 * r))        # meridian
+    for off in (0.0, -0.5, 0.5):                                    # equator + two parallels
+        y = c + off * r
+        half = (r * r - (off * r) ** 2) ** 0.5
+        p.drawLine(QPointF(c - half, y), QPointF(c + half, y))
+    p.end()
+    return QIcon(pixmap)
+
 
 def scroll_page(page):
     """Wrap a page so tall content (Enigma settings, key panel) never gets clipped."""
@@ -650,19 +687,13 @@ class CryptoLab(QMainWindow):
 
         sidebar = QFrame()
         sidebar.setObjectName("Sidebar")
-        sidebar.setFixedWidth(225)
+        sidebar.setFixedWidth(SIDEBAR_WIDTH)
         side = QVBoxLayout(sidebar)
         side.setContentsMargins(17, 24, 17, 18)
         side.setSpacing(9)
         side.addWidget(label("◈  CRYPTOLAB", "Brand"))
         side.addWidget(self.tlabel("SECURITY TOOLKIT / {version}", "Eyebrow"))
-        side.addSpacing(12)
-        side.addWidget(label("LANGUAGE", "Eyebrow"))
-        self.language_selector = QComboBox()
-        self.language_selector.setObjectName("LanguageSelector")
-        self.language_selector.addItems(self.i18n.names)
-        side.addWidget(self.language_selector)
-        side.addSpacing(12)
+        side.addSpacing(18)
 
         self.key_panel = KeyPanel(self)
         self.stack = QStackedWidget()
@@ -689,16 +720,22 @@ class CryptoLab(QMainWindow):
         main = QWidget()
         ml = QVBoxLayout(main)
         ml.setContentsMargins(28, 23, 28, 22)
-        ml.addWidget(label("CRYPTOGRAPHY / LEARNING ENVIRONMENT", "Eyebrow"))
+        self.build_language_menu()
+        head = QHBoxLayout()
+        titles = QVBoxLayout()
+        titles.addWidget(label("CRYPTOGRAPHY / LEARNING ENVIRONMENT", "Eyebrow"))
         status = label("●  SYSTEM READY")
         status.setStyleSheet("color:#5de0bd;font-size:11px;font-weight:800;")
-        ml.addWidget(status)
+        titles.addWidget(status)
+        head.addLayout(titles, 1)
+        head.addWidget(self.lang_button, 0, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
+        ml.addLayout(head)
         ml.addWidget(self.stack, 1)
         ml.addWidget(self.key_panel)
         outer.addWidget(sidebar)
         outer.addWidget(main, 1)
         self._capture_original_ui()
-        self.language_selector.currentIndexChanged.connect(self.apply_language)
+        self.fit_nav_buttons()
         self.switch_page(0)
 
     def _capture_original_ui(self):
@@ -706,8 +743,8 @@ class CryptoLab(QMainWindow):
         self._original_placeholders = {}
         self._original_combo_items = {}
         for widget in self.findChildren(QWidget):
-            if widget is self.language_selector:
-                continue
+            if widget is self.lang_button:
+                continue  # shows a language code, not translatable text
             if hasattr(widget, "text") and callable(widget.text):
                 try:
                     self._original_text[widget] = widget.text()
@@ -740,8 +777,6 @@ class CryptoLab(QMainWindow):
         for widget, original in self._original_placeholders.items():
             widget.setPlaceholderText(tr(original))
         for widget, items in self._original_combo_items.items():
-            if widget is self.language_selector:
-                continue
             current = widget.currentIndex()
             widget.blockSignals(True)
             for i, original in enumerate(items):
@@ -752,6 +787,58 @@ class CryptoLab(QMainWindow):
             widget.setText(tr(template).format(version=VERSION_TAG))
         self.update_cipher_controls()
         self.render_compare()
+        self.refresh_language_button()
+        self.fit_nav_buttons()
+
+    # ── language menu (compact button in the top-right corner) ──
+    def build_language_menu(self):
+        self.language_index = 0
+        self.lang_button = QToolButton()
+        self.lang_button.setObjectName("LangButton")
+        self.lang_button.setIcon(make_globe_icon())
+        self.lang_button.setIconSize(QSize(18, 18))
+        self.lang_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
+        self.lang_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.lang_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.lang_menu = QMenu(self.lang_button)
+        self.lang_actions = []
+        for i, name in enumerate(self.i18n.names):
+            action = QAction(name, self.lang_menu)
+            action.triggered.connect(lambda checked=False, index=i: self.set_language_index(index))
+            self.lang_menu.addAction(action)
+            self.lang_actions.append(action)
+        self.lang_button.setMenu(self.lang_menu)
+        self.refresh_language_button()
+
+    def refresh_language_button(self):
+        """Button shows the current code (EN, UK…); the menu marks the current language."""
+        codes = self.i18n.codes
+        self.lang_button.setToolTip(f"{self.i18n.tr('Language')}: {self.i18n.names[self.language_index]}")
+        for i, (action, name) in enumerate(zip(self.lang_actions, self.i18n.names)):
+            action.setText(f"{'●' if i == self.language_index else '○'}   {name}")
+
+    def set_language_index(self, index):
+        if index != self.language_index and 0 <= index < len(self.lang_actions):
+            self.language_index = index
+            self.apply_language(index)
+
+    # ── sidebar: long translations must never be cut off ──
+    def fit_nav_buttons(self):
+        """Shrink a navigation label (down to 11 px) when it would not fit; full text goes to the tooltip."""
+        available = SIDEBAR_WIDTH - 2 * SIDEBAR_MARGIN - 2 * NAV_PADDING - 6
+        base = QApplication.font()
+        for button in self.nav_buttons:
+            text = button.text()
+            size = 14
+            while size > 11:
+                font = QFont(base)
+                font.setPixelSize(size)
+                font.setWeight(QFont.Weight.Bold)  # widest weight we use, so this is conservative
+                if QFontMetrics(font).horizontalAdvance(text) <= available:
+                    break
+                size -= 1
+            button.setStyleSheet("" if size == 14 else f"font-size:{size}px;")
+            button.setToolTip(text.split(None, 1)[-1])
 
     def switch_page(self, index):
         self.stack.setCurrentIndex(index)
@@ -780,7 +867,7 @@ class CryptoLab(QMainWindow):
         layout.addLayout(grid)
         box, b = card()
         b.addWidget(self.tlabel("WHAT'S NEW IN {version}", "Eyebrow"))
-        b.addWidget(label("• Fixed hashing: MD5, SHA-1, SHA3-256 and SHA3-512 no longer fail.\n• Translations moved to separate JSON files; Chinese and Spanish added.\n• Dialogs, hints and error messages now follow the selected language.", "Muted"))
+        b.addWidget(label("• Fixed hashing: MD5, SHA-1, SHA3-256 and SHA3-512 no longer fail.\n• Translations moved to separate JSON files; Chinese and Spanish added.\n• Dialogs, hints and error messages now follow the selected language.\n• Compact language menu in the corner; sidebar fits long translations; Code Laboratory output can be cleared.", "Muted"))
         b.addWidget(label("ALSO IN BETA.4", "Eyebrow"))
         b.addWidget(label("• Key panel with live validation and compatible key generation.\n• Fixed AES-256-GCM, Fernet, XOR and Atbash handling.\n• Larger Enigma settings; Inter font with Noto Sans fallback.", "Muted"))
         b.addWidget(label("AUTHOR", "Eyebrow"))
@@ -1179,11 +1266,16 @@ class CryptoLab(QMainWindow):
         choose.setObjectName("Primary")
         choose.clicked.connect(self.open_pyc)
         row.addWidget(choose)
+        self.code_clear = QPushButton("Clear output")
+        self.code_clear.setEnabled(False)
+        self.code_clear.clicked.connect(self.clear_code_output)
+        row.addWidget(self.code_clear)
         row.addStretch()
         b.addLayout(row)
         self.code_output = QTextEdit()
         self.code_output.setReadOnly(True)
         self.code_output.setPlaceholderText("Bytecode output will appear here…")
+        self.code_output.textChanged.connect(lambda: self.code_clear.setEnabled(bool(self.code_output.toPlainText())))
         b.addWidget(self.code_output)
         layout.addWidget(box)
         note, n = card()
@@ -1192,6 +1284,9 @@ class CryptoLab(QMainWindow):
         layout.addWidget(note)
         layout.addStretch()
         return page
+
+    def clear_code_output(self):
+        self.code_output.clear()
 
     def open_pyc(self):
         path, _ = QFileDialog.getOpenFileName(self, self.msg("dialog.select_bytecode"), "", self.msg("dialog.pyc_filter"))
