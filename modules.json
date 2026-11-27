@@ -1,0 +1,18 @@
+{
+  "modules": [
+    "sys",
+    "os",
+    "re",
+    "base64",
+    "binascii",
+    "dis",
+    "hashlib",
+    "secrets",
+    "string",
+    "marshal",
+    "types",
+    "datetime",
+    "pathlib",
+    "PySide6"
+  ]
+}

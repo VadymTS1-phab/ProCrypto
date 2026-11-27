@@ -14,6 +14,7 @@ from pathlib import Path
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QFontDatabase
+from i18n import I18n
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QFrame, QLabel, QPushButton,
     QLineEdit, QTextEdit, QVBoxLayout, QHBoxLayout, QStackedWidget,
@@ -21,7 +22,8 @@ from PySide6.QtWidgets import (
     QScrollArea
 )
 
-APP_VERSION = "Beta.4"
+APP_VERSION = "Beta.5"
+VERSION_TAG = APP_VERSION.upper()
 AUTHOR = "Vadym Tsykvas"
 APP_STYLE = """
 QWidget { background:#0b1020; color:#e8eefc; font-family:__FONTS__; font-size:14px; }
@@ -81,7 +83,8 @@ def setup_fonts(app):
         print("CryptoLab: Inter not found; put Inter-*.ttf into the 'fonts' folder or install it.", file=sys.stderr)
     if not noto:
         print("CryptoLab: Noto Sans not found; put NotoSans-*.ttf into the 'fonts' folder or install it.", file=sys.stderr)
-    stack = [n for n in (inter, noto) if n] + ["Segoe UI", "Helvetica Neue", "Arial"]
+    cjk = ["Noto Sans SC", "Noto Sans CJK SC", "Microsoft YaHei UI", "PingFang SC"]  # Chinese glyphs
+    stack = [n for n in (inter, noto) if n] + cjk + ["Segoe UI", "Helvetica Neue", "Arial"]
     font = QFont()
     font.setFamilies(stack)
     font.setPixelSize(14)
@@ -136,175 +139,6 @@ class CryptoError(ValueError):
         super().__init__(code)
         self.code = code
         self.params = params
-
-
-MESSAGES = {
-    "input.empty": {
-        "en": "Enter some text first.",
-        "uk": "Спочатку введіть текст.",
-    },
-    "key.empty": {
-        "en": "The key is empty. Enter a key or press “Generate key”.",
-        "uk": "Ключ порожній. Введіть ключ або натисніть «Згенерувати ключ».",
-    },
-    "key.aes.length": {
-        "en": "AES-256-GCM needs a HEX key of exactly 64 characters (32 bytes). Yours has {n}.",
-        "uk": "AES-256-GCM потребує HEX-ключ рівно з 64 символів (32 байти). У вашому ключі їх {n}.",
-    },
-    "key.aes.is_base64": {
-        "en": "This looks like a Base64 key (the Fernet format). AES-256-GCM needs HEX. Press “Convert key format”.",
-        "uk": "Це схоже на ключ у форматі Base64 (формат Fernet). AES-256-GCM потребує HEX. Натисніть «Перетворити формат ключа».",
-    },
-    "key.aes.chars": {
-        "en": "An AES-256-GCM key may contain only 0–9 and a–f. Invalid character: “{ch}”.",
-        "uk": "Ключ AES-256-GCM може містити лише 0–9 та a–f. Недопустимий символ: «{ch}».",
-    },
-    "key.fernet.is_hex": {
-        "en": "This looks like a HEX key (the AES-256-GCM format). Fernet needs Base64. Press “Convert key format”.",
-        "uk": "Це схоже на HEX-ключ (формат AES-256-GCM). Fernet потребує Base64. Натисніть «Перетворити формат ключа».",
-    },
-    "key.fernet.chars": {
-        "en": "A Fernet key must be Base64. Invalid character: “{ch}”.",
-        "uk": "Ключ Fernet має бути у форматі Base64. Недопустимий символ: «{ch}».",
-    },
-    "key.fernet.b64": {
-        "en": "This is not valid Base64. A Fernet key is 44 characters long and usually ends with “=”.",
-        "uk": "Це некоректний Base64. Ключ Fernet має 44 символи і зазвичай закінчується на «=».",
-    },
-    "key.fernet.length": {
-        "en": "A Fernet key must decode to exactly 32 bytes; yours decodes to {n}. Paste the whole key or generate a new one.",
-        "uk": "Ключ Fernet має декодуватися рівно в 32 байти, а ваш — у {n}. Вставте ключ повністю або згенеруйте новий.",
-    },
-    "key.vig.chars": {
-        "en": "A Vigenère key may contain only Latin letters A–Z. Invalid character: “{ch}”.",
-        "uk": "Ключ Віженера може містити лише латинські літери A–Z. Недопустимий символ: «{ch}».",
-    },
-    "token.bad_b64": {
-        "en": "The input is not a valid Base64 token. Paste the whole token produced by encryption, without extra characters.",
-        "uk": "Вхідні дані не є коректним токеном Base64. Вставте весь токен, отриманий після шифрування, без зайвих символів.",
-    },
-    "token.too_short": {
-        "en": "The token is too short for an AES-256-GCM message; it may be cut off.",
-        "uk": "Токен закороткий для повідомлення AES-256-GCM; можливо, його скопійовано не повністю.",
-    },
-    "token.looks_fernet": {
-        "en": "This looks like a Fernet token (it starts with “gAAAA”). Select Fernet instead of AES-256-GCM.",
-        "uk": "Це схоже на токен Fernet (він починається з «gAAAA»). Оберіть Fernet замість AES-256-GCM.",
-    },
-    "token.not_fernet": {
-        "en": "This does not look like a Fernet token (they start with “gAAAA”). If it was made with AES-256-GCM, select that algorithm.",
-        "uk": "Це не схоже на токен Fernet (вони починаються з «gAAAA»). Якщо його створено в AES-256-GCM, оберіть цей алгоритм.",
-    },
-    "decrypt.failed": {
-        "en": "Decryption failed: the key is wrong, or the data was changed or damaged.",
-        "uk": "Не вдалося розшифрувати: ключ неправильний або дані змінено чи пошкоджено.",
-    },
-    "decrypt.xor_failed": {
-        "en": "Decryption produced unreadable text. Most likely the key is wrong.",
-        "uk": "Після розшифрування вийшов нечитабельний текст. Найімовірніше, ключ неправильний.",
-    },
-    "decrypt.not_text": {
-        "en": "The data was decrypted, but it is not valid UTF-8 text.",
-        "uk": "Дані розшифровано, але це не коректний текст UTF-8.",
-    },
-    "dep.missing": {
-        "en": "The “cryptography” package is required. Install it with: python3 -m pip install cryptography",
-        "uk": "Потрібна бібліотека cryptography. Встановіть її: python3 -m pip install cryptography",
-    },
-    "enigma.rotors": {
-        "en": "Choose three different rotors from I, II, III, IV, V.",
-        "uk": "Оберіть три різні ротори з I, II, III, IV, V.",
-    },
-    "enigma.positions": {
-        "en": "Start positions and ring settings must be three letters A–Z, e.g. AAA.",
-        "uk": "Початкові позиції та кільця мають бути трьома літерами A–Z, наприклад AAA.",
-    },
-    "enigma.reflector": {
-        "en": "The reflector must be B or C.",
-        "uk": "Рефлектор має бути B або C.",
-    },
-    "enigma.plug_format": {
-        "en": "Enter plugboard pairs like this: AB CD EF.",
-        "uk": "Пари штекерної панелі введіть так: AB CD EF.",
-    },
-    "enigma.plug_dupe": {
-        "en": "A letter can be used in only one plugboard pair.",
-        "uk": "Літера може входити лише в одну пару штекерної панелі.",
-    },
-    "op.unexpected": {
-        "en": "Unexpected error: {detail}",
-        "uk": "Неочікувана помилка: {detail}",
-    },
-    # key panel: what each algorithm expects
-    "hint.aes": {
-        "en": "AES-256-GCM key: 64 HEX characters (32 bytes).",
-        "uk": "Ключ AES-256-GCM: 64 HEX-символи (32 байти).",
-    },
-    "hint.fernet": {
-        "en": "Fernet key: 44 Base64 characters (32 bytes).",
-        "uk": "Ключ Fernet: 44 символи Base64 (32 байти).",
-    },
-    "hint.vig": {
-        "en": "Vigenère key: Latin letters A–Z only.",
-        "uk": "Ключ Віженера: лише латинські літери A–Z.",
-    },
-    "hint.xor": {
-        "en": "XOR key: any text (UTF-8).",
-        "uk": "Ключ XOR: будь-який текст (UTF-8).",
-    },
-    "hint.caesar": {
-        "en": "Caesar uses the shift setting above. “Generate key” picks a random shift.",
-        "uk": "Цезар використовує зсув, указаний вище. «Згенерувати ключ» обирає випадковий зсув.",
-    },
-    "hint.enigma": {
-        "en": "Enigma uses the rotor, position, ring and plugboard settings above. “Generate key” randomizes them.",
-        "uk": "Енігма використовує налаштування роторів, позицій, кілець і штекерної панелі вище. «Згенерувати ключ» випадково їх змінює.",
-    },
-    "hint.none": {
-        "en": "This algorithm does not use a key.",
-        "uk": "Цей алгоритм не використовує ключ.",
-    },
-    "ph.aes": {"en": "64 HEX characters (0–9, a–f)", "uk": "64 HEX-символи (0–9, a–f)"},
-    "ph.fernet": {"en": "44 Base64 characters", "uk": "44 символи Base64"},
-    "ph.vig": {"en": "Latin letters, e.g. SECRET", "uk": "Латинські літери, напр. SECRET"},
-    "ph.xor": {"en": "Any text", "uk": "Будь-який текст"},
-    "ph.none": {"en": "Not used", "uk": "Не використовується"},
-    "ok.aes": {
-        "en": "✓ Valid key: AES-256 (32 bytes, HEX)",
-        "uk": "✓ Ключ коректний: AES-256 (32 байти, HEX)",
-    },
-    "ok.fernet": {
-        "en": "✓ Valid key: Fernet (32 bytes, Base64)",
-        "uk": "✓ Ключ коректний: Fernet (32 байти, Base64)",
-    },
-    "ok.vig": {
-        "en": "✓ Valid key ({n} letters)",
-        "uk": "✓ Ключ коректний ({n} літер)",
-    },
-    "ok.xor": {
-        "en": "✓ Key accepted ({n} bytes)",
-        "uk": "✓ Ключ прийнято ({n} байтів)",
-    },
-    "status.generated": {
-        "en": "✓ A new {algo} key was generated. Save it: you need it to decrypt.",
-        "uk": "✓ Згенеровано новий ключ {algo}. Збережіть його: він потрібен для розшифрування.",
-    },
-    "status.caesar_random": {
-        "en": "✓ Random shift applied: {n}.",
-        "uk": "✓ Випадковий зсув застосовано: {n}.",
-    },
-    "status.enigma_random": {
-        "en": "✓ Random Enigma settings applied. Note them down to decrypt later.",
-        "uk": "✓ Випадкові налаштування Енігми застосовано. Запишіть їх, щоб потім розшифрувати.",
-    },
-}
-
-
-def msg(code, lang="en", **params):
-    entry = MESSAGES.get(code)
-    if entry is None:
-        return code
-    return entry.get(lang, entry["en"]).format(**params)
 
 
 # ── Key formats and validation ──
@@ -541,6 +375,34 @@ def atbash(text):
     return "".join(out)
 
 
+# Interface label -> hashlib name. The old code derived the name from the label text,
+# which produced 'md5 (legacy only)' and 'sha3256' and failed with "unsupported hash type".
+HASH_ALGORITHMS = {
+    "SHA-224": "sha224", "SHA-256": "sha256", "SHA-384": "sha384", "SHA-512": "sha512",
+    "SHA3-256": "sha3_256", "SHA3-512": "sha3_512",
+    "BLAKE2b": "blake2b", "BLAKE2s": "blake2s",
+    "SHA-1 (legacy only)": "sha1", "MD5 (legacy only)": "md5",
+}
+LEGACY_HASHES = frozenset({"sha1", "md5"})
+
+
+def compute_digest(label_en, data):
+    """Hex digest of `data` (bytes) for an English algorithm label from HASH_ALGORITHMS."""
+    name = HASH_ALGORITHMS.get(label_en)
+    shown = label_en.split(" (")[0]
+    if name is None:
+        raise CryptoError("hash.unknown", algo=shown)
+    try:
+        if name in LEGACY_HASHES:
+            try:  # not a security use: lets MD5/SHA-1 work on FIPS-restricted OpenSSL builds
+                return hashlib.new(name, data, usedforsecurity=False).hexdigest()
+            except TypeError:  # Python < 3.9 has no usedforsecurity
+                return hashlib.new(name, data).hexdigest()
+        return hashlib.new(name, data).hexdigest()
+    except ValueError:
+        raise CryptoError("hash.unsupported", algo=shown) from None
+
+
 def caesar(text, shift):
     out = []
     for ch in text:
@@ -652,120 +514,6 @@ def enigma_transform(text, rotor_names="I II III", positions="AAA", rings="AAA",
         out.append(result if ch.isupper() else result.lower())
     return "".join(out)
 
-#Language types
-TRANSLATIONS = {
-    "en": {},
-    "uk": {
-        "◈  CRYPTOLAB": "◈  CRYPTOLAB",
-        "SECURITY TOOLKIT / BETA.3": "НАБІР ІНСТРУМЕНТІВ / BETA.3",
-        "LANGUAGE": "МОВА",
-        "LOCAL MODE • OFFLINE": "ЛОКАЛЬНИЙ РЕЖИМ • ОФЛАЙН",
-        "CRYPTOGRAPHY / LEARNING ENVIRONMENT": "КРИПТОГРАФІЯ / НАВЧАЛЬНЕ СЕРЕДОВИЩЕ",
-        "●  SYSTEM READY": "●  СИСТЕМА ГОТОВА",
-        "⌂   Overview": "⌂   Огляд",
-        "▣   Encryption": "▣   Шифрування",
-        "⌗   Hash laboratory": "⌗   Лабораторія хешів",
-        "◎   Password lab": "◎   Лабораторія паролів",
-        "⚿   Key generator": "⚿   Генератор ключів",
-        "⌘   Code laboratory": "⌘   Лабораторія коду",
-        "CONTROL CENTER / BETA.3": "ЦЕНТР КЕРУВАННЯ / BETA.3",
-        "Welcome to CryptoLab.": "Ласкаво просимо до CryptoLab.",
-        "A local workspace for cryptography experiments and code inspection.": "Локальне середовище для експериментів із криптографією та аналізу коду.",
-        "05": "05", "LAB MODULES": "МОДУЛІ ЛАБОРАТОРІЇ",
-        "08+": "08+", "HASH OPTIONS": "АЛГОРИТМИ ХЕШУВАННЯ",
-        "BETA.3": "BETA.3", "RELEASE": "ВЕРСІЯ",
-        "WHAT'S NEW IN BETA.3": "ЩО НОВОГО У BETA.3",
-        "More classical ciphers, modern authenticated encryption (optional dependency), additional hash functions and password KDFs, key formats, plus Python bytecode inspection.": "Більше класичних шифрів, сучасне автентифіковане шифрування (потрібна додаткова бібліотека), нові хеш-функції та алгоритми отримання ключів із паролів, формати ключів і аналіз байткоду Python.",
-        "AUTHOR": "АВТОР",
-        "Vadym Tsykvas  •  © 2026. All rights reserved.": "Vadym Tsykvas  •  © 2026. Усі права захищено.",
-        "SECURITY NOTE": "ПРИМІТКА З БЕЗПЕКИ",
-        "Caesar, Vigenère, Atbash, ROT13 and repeating-key XOR are educational examples, not secure protection. Use AES-GCM or Fernet for real data, and keep keys secret.": "Цезар, Віженер, Atbash, ROT13 та XOR із повторюваним ключем — навчальні приклади, а не надійний захист. Для реальних даних використовуйте AES-GCM або Fernet і зберігайте ключі в таємниці.",
-        "CIPHERS / 01": "ШИФРИ / 01",
-        "Encryption laboratory": "Лабораторія шифрування",
-        "Choose a method. Modern encryption uses the optional cryptography package.": "Оберіть метод. Для сучасного шифрування потрібен додатковий пакет cryptography.",
-        "ALGORITHM": "АЛГОРИТМ", "INPUT": "ВХІДНІ ДАНІ", "KEY": "КЛЮЧ", "OUTPUT": "РЕЗУЛЬТАТ",
-        "Enter text, or Base64 token when decrypting…": "Введіть текст або токен Base64 для розшифрування…",
-        "Key / password / shift (as required)": "Ключ / пароль / зсув (залежно від алгоритму)",
-        "Encrypt": "Зашифрувати", "Decrypt": "Розшифрувати",
-        "AES-GCM and Fernet output is a Base64 token containing the nonce/metadata and ciphertext. Manage the key in the key panel below; it is validated before every operation. Enigma I is a historical educational simulator, not secure encryption.": "Результат AES-GCM і Fernet — токен Base64 із nonce/метаданими та шифротекстом. Ключем керуйте на панелі ключів нижче: перед кожною операцією він перевіряється. Енігма I — історичний навчальний симулятор, а не надійне шифрування.",
-        "HASH FUNCTIONS / 02": "ХЕШ-ФУНКЦІЇ / 02",
-        "Hash laboratory": "Лабораторія хешів",
-        "Calculate a digest and compare two hash strings.": "Обчислюйте хеш і порівнюйте два хеш-рядки.",
-        "HASH ALGORITHM": "АЛГОРИТМ ХЕШУВАННЯ", "Text to hash…": "Текст для хешування…",
-        "Calculate digest": "Обчислити хеш", "DIGEST": "ХЕШ",
-        "Copy digest": "Копіювати хеш", "DIGEST COMPARISON": "ПОРІВНЯННЯ ХЕШІВ",
-        "First digest": "Перший хеш", "Second digest": "Другий хеш", "Compare": "Порівняти",
-        "Comparison result will appear here.": "Тут з’явиться результат порівняння.",
-        "MD5 and SHA-1 are included only for compatibility/testing; do not use them for security-sensitive integrity or passwords.": "MD5 і SHA-1 додані лише для сумісності та тестування. Не використовуйте їх для захисту даних або паролів.",
-        "PASSWORD SECURITY / 03": "БЕЗПЕКА ПАРОЛІВ / 03",
-        "Password laboratory": "Лабораторія паролів",
-        "Derive password hashes using salts and configurable key-derivation algorithms.": "Отримуйте хеші паролів із сіллю та різними алгоритмами.",
-        "SAMPLE PASSWORD": "ТЕСТОВИЙ ПАРОЛЬ",
-        "Use a test password, not your real account password": "Введіть тестовий пароль, а не пароль від реального облікового запису",
-        "KDF ALGORITHM": "АЛГОРИТМ KDF", "Show sample password": "Показати тестовий пароль",
-        "Derive password hash": "Обчислити хеш пароля", "SALT (HEX)": "СІЛЬ (HEX)",
-        "DERIVED HASH (HEX)": "ОТРИМАНИЙ ХЕШ (HEX)",
-        "Argon2id requires: python3 -m pip install argon2-cffi. Keep the salt with the hash; it is not a secret.": "Для Argon2id встановіть: python3 -m pip install argon2-cffi. Зберігайте сіль разом із хешем; сіль не є секретом.",
-        "RANDOMNESS / 04": "ВИПАДКОВІСТЬ / 04",
-        "Key generator": "Генератор ключів",
-        "Generate random material using Python's cryptographically secure random source.": "Генеруйте випадкові дані за допомогою криптографічно стійкого генератора Python.",
-        "KEY TYPE": "ТИП КЛЮЧА", "TEXT KEY LENGTH": "ДОВЖИНА ТЕКСТОВОГО КЛЮЧА",
-        "Include symbols in random text": "Додавати символи до випадкового тексту",
-        "OUTPUT FORMAT": "ФОРМАТ РЕЗУЛЬТАТУ", "Generate key": "Згенерувати ключ",
-        "GENERATED KEY": "ЗГЕНЕРОВАНИЙ КЛЮЧ", "Copy key": "Копіювати ключ",
-        "CODE LABORATORY / 05": "ЛАБОРАТОРІЯ КОДУ / 05",
-        "Python bytecode inspector": "Аналізатор байткоду Python",
-        "Inspect a Python .pyc file and display its bytecode instructions. This is a lightweight disassembler, not a full source-code recovery tool.": "Аналізуйте файл Python .pyc і переглядайте інструкції байткоду. Це простий дизасемблер, а не повноцінний засіб відновлення початкового коду.",
-        "Open .pyc file": "Відкрити файл .pyc",
-        "Bytecode output will appear here…": "Тут з’явиться результат аналізу байткоду…",
-        "LIMITATIONS": "ОБМЕЖЕННЯ",
-        "Python bytecode is version-specific. Use the same Python major/minor version that created the .pyc file. The tool shows disassembled instructions and metadata; it does not execute the file or guarantee reconstruction of original source.": "Байткод Python залежить від версії. Використовуйте ту саму основну та додаткову версію Python, якою створено .pyc. Інструмент показує інструкції та метадані, не запускає файл і не гарантує відновлення оригінального коду.",
-        "Random text": "Випадковий текст", "AES-128 (16 bytes)": "AES-128 (16 байтів)",
-        "AES-192 (24 bytes)": "AES-192 (24 байти)", "AES-256 (32 bytes)": "AES-256 (32 байти)",
-        "32 random bytes": "32 випадкові байти", "64 random bytes": "64 випадкові байти",
-        "Hex": "Hex", "Base64": "Base64", "Text (random text only)": "Текст (лише випадковий текст)",
-        "Caesar": "Цезар", "ROT13": "ROT13", "Atbash": "Atbash", "Vigenère": "Віженер",
-        "Caesar shift (0–25)": "Зсув Цезаря (0–25)",
-        "Rotors left to right (I–V)": "Ротори зліва направо (I–V)",
-        "Start positions (3 letters)": "Початкові позиції (3 літери)",
-        "Ring settings (3 letters)": "Налаштування кілець (3 літери)",
-        "Reflector": "Рефлектор", "Plugboard pairs": "Пари штекерної панелі",
-        "CAESAR SHIFT (0–25)": "ЗСУВ ЦЕЗАРЯ (0–25)",
-        "ROTORS LEFT TO RIGHT (I–V)": "РОТОРИ ЗЛІВА НАПРАВО (I–V)",
-        "START POSITIONS (3 LETTERS)": "ПОЧАТКОВІ ПОЗИЦІЇ (3 ЛІТЕРИ)",
-        "RING SETTINGS (3 LETTERS)": "НАЛАШТУВАННЯ КІЛЕЦЬ (3 ЛІТЕРИ)",
-        "REFLECTOR": "РЕФЛЕКТОР", "PLUGBOARD PAIRS": "ПАРИ ШТЕКЕРНОЇ ПАНЕЛІ",
-        "Enigma I (educational)": "Енігма I (навчальна)",
-        "Repeating-key XOR (demo)": "XOR із повторюваним ключем (демо)",
-        "AES-256-GCM": "AES-256-GCM", "Fernet": "Fernet",
-        "SHA-224": "SHA-224", "SHA-256": "SHA-256", "SHA-384": "SHA-384",
-        "SHA-512": "SHA-512", "SHA3-256": "SHA3-256", "SHA3-512": "SHA3-512",
-        "BLAKE2b": "BLAKE2b", "BLAKE2s": "BLAKE2s",
-        "SHA-1 (legacy only)": "SHA-1 (застарілий)", "MD5 (legacy only)": "MD5 (застарілий)",
-        "PBKDF2-HMAC-SHA256": "PBKDF2-HMAC-SHA256",
-        "PBKDF2-HMAC-SHA512": "PBKDF2-HMAC-SHA512", "scrypt": "scrypt",
-        "Argon2id (optional package)": "Argon2id (додатковий пакет)",
-        "Enter a sample password first.": "Спочатку введіть тестовий пароль.",
-        "Missing input": "Немає вхідних даних", "Operation failed": "Помилка операції",
-        "Hash error": "Помилка хешування", "KDF error": "Помилка KDF",
-        "Missing package": "Відсутній пакет",
-        "Install Argon2 support with: python3 -m pip install argon2-cffi": "Встановіть підтримку Argon2 командою: python3 -m pip install argon2-cffi",
-        "Select Python bytecode": "Виберіть байткод Python",
-        "Could not inspect bytecode": "Не вдалося проаналізувати байткод",
-        "The file does not contain a recognized Python code object.": "Файл не містить розпізнаного об’єкта коду Python.",
-        "File is too short to be a standard modern .pyc file.": "Файл надто короткий для стандартного сучасного формату .pyc.",
-        "Enter both digests.": "Введіть обидва хеші.",
-        "✓ MATCH — digests are identical.": "✓ ЗБІГ — хеші однакові.",
-        "✕ NO MATCH — digests differ.": "✕ НЕ ЗБІГАЮТЬСЯ — хеші різні.",
-        "KEY PANEL": "ПАНЕЛЬ КЛЮЧІВ",
-        "Clear": "Очистити",
-        "Convert key format": "Перетворити формат ключа",
-        "ENIGMA SETTINGS": "НАЛАШТУВАННЯ ЕНІГМИ",
-        "LEFT": "ЛІВИЙ", "MIDDLE": "СЕРЕДНІЙ", "RIGHT": "ПРАВИЙ",
-        "AB CD EF (optional)": "AB CD EF (необов’язково)",
-    }
-}
-
 class KeyPanel(QFrame):
     """The single key panel of the main window.
 
@@ -834,11 +582,10 @@ class KeyPanel(QFrame):
         self.status.setStyleSheet(self.STATUS_STYLES[state])
 
     def refresh(self, *_):
-        lang = self.owner.lang
         m = self.method
         keyed = m in KEYED_METHODS
-        self.hint.setText(msg(self.HINT_CODES.get(m, "hint.none"), lang))
-        self.key_edit.setPlaceholderText(msg(self.PLACEHOLDER_CODES.get(m, "ph.none"), lang))
+        self.hint.setText(self.owner.msg(self.HINT_CODES.get(m, "hint.none")))
+        self.key_edit.setPlaceholderText(self.owner.msg(self.PLACEHOLDER_CODES.get(m, "ph.none")))
         self.key_edit.setEnabled(keyed)
         self.generate_btn.setEnabled(keyed or m in (M_CAESAR, M_ENIGMA))
         self.copy_btn.setEnabled(keyed)
@@ -849,34 +596,34 @@ class KeyPanel(QFrame):
             return
         text = self.key_edit.text()
         if not text.strip():
-            self.flash(msg("key.empty", lang), "info")
+            self.flash(self.owner.msg("key.empty"), "info")
             return
         try:
             parsed = validate_key(m, text)
         except CryptoError as exc:
-            self.flash("✕ " + msg(exc.code, lang, **exc.params), "bad")
+            self.flash("✕ " + self.owner.msg(exc.code, **exc.params), "bad")
             self.convert_btn.setVisible(exc.code in CONVERT_CODES)
             return
         if m == M_AES:
-            ok = msg("ok.aes", lang)
+            ok = self.owner.msg("ok.aes")
         elif m == M_FERNET:
-            ok = msg("ok.fernet", lang)
+            ok = self.owner.msg("ok.fernet")
         else:
-            ok = msg("ok.vig" if m == M_VIGENERE else "ok.xor", lang, n=len(parsed))
+            ok = self.owner.msg("ok.vig" if m == M_VIGENERE else "ok.xor", n=len(parsed))
         self.flash(ok, "ok")
 
     def on_generate(self):
-        lang, m = self.owner.lang, self.method
+        m = self.method
         if m == M_CAESAR:
             shift = secrets.randbelow(25) + 1
             self.owner.caesar_shift.setValue(shift)
-            self.flash(msg("status.caesar_random", lang, n=shift))
+            self.flash(self.owner.msg("status.caesar_random", n=shift))
         elif m == M_ENIGMA:
             self.owner.apply_enigma_settings(random_enigma_settings())
-            self.flash(msg("status.enigma_random", lang))
+            self.flash(self.owner.msg("status.enigma_random"))
         elif m in KEYED_METHODS:
             self.set_key(generate_key(m))
-            self.flash(msg("status.generated", lang, algo=ALGO_SHORT[m]))
+            self.flash(self.owner.msg("status.generated", algo=ALGO_SHORT[m]))
 
     def on_convert(self):
         self.set_key(convert_key(self.method, self.key_edit.text()))
@@ -886,6 +633,10 @@ class KeyPanel(QFrame):
 class CryptoLab(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.i18n = I18n()
+        self._templated = []          # (label, template with {version})
+        self._original_combo_items = {}
+        self._compare_state = None
         self.setWindowTitle(f"CryptoLab Pro {APP_VERSION}")
         self.resize(1180, 800)
         self.setMinimumSize(900, 650)
@@ -904,12 +655,12 @@ class CryptoLab(QMainWindow):
         side.setContentsMargins(17, 24, 17, 18)
         side.setSpacing(9)
         side.addWidget(label("◈  CRYPTOLAB", "Brand"))
-        side.addWidget(label("SECURITY TOOLKIT / BETA.3", "Eyebrow"))
+        side.addWidget(self.tlabel("SECURITY TOOLKIT / {version}", "Eyebrow"))
         side.addSpacing(12)
         side.addWidget(label("LANGUAGE", "Eyebrow"))
         self.language_selector = QComboBox()
         self.language_selector.setObjectName("LanguageSelector")
-        self.language_selector.addItems(["English", "Українська"])
+        self.language_selector.addItems(self.i18n.names)
         side.addWidget(self.language_selector)
         side.addSpacing(12)
 
@@ -970,30 +721,37 @@ class CryptoLab(QMainWindow):
             if isinstance(widget, QComboBox):
                 self._original_combo_items[widget] = [widget.itemText(i) for i in range(widget.count())]
 
+    def tlabel(self, text, name=None):
+        """Label whose text may contain {version}; it is re-translated when the language changes."""
+        if "{version}" in text:
+            widget = label(text.format(version=VERSION_TAG), name)
+            self._templated.append((widget, text))
+            return widget
+        return label(text, name)
+
     def apply_language(self, index):
-        lang = "uk" if index == 1 else "en"
-        catalog = TRANSLATIONS[lang]
+        codes = self.i18n.codes
+        if 0 <= index < len(codes):
+            self.i18n.set_language(codes[index])
+        tr = self.i18n.tr
         for widget, original in self._original_text.items():
-            translated = catalog.get(original, original)
-            if isinstance(widget, QLabel):
-                widget.setText(translated)
-            elif isinstance(widget, QPushButton):
-                widget.setText(translated)
-            elif isinstance(widget, QCheckBox):
-                widget.setText(translated)
+            if isinstance(widget, (QLabel, QPushButton, QCheckBox)):
+                widget.setText(tr(original))
         for widget, original in self._original_placeholders.items():
-            widget.setPlaceholderText(catalog.get(original, original))
+            widget.setPlaceholderText(tr(original))
         for widget, items in self._original_combo_items.items():
             if widget is self.language_selector:
                 continue
             current = widget.currentIndex()
             widget.blockSignals(True)
             for i, original in enumerate(items):
-                widget.setItemText(i, catalog.get(original, original))
+                widget.setItemText(i, tr(original))
             widget.setCurrentIndex(current)
             widget.blockSignals(False)
-        if hasattr(self, "cipher"):
-            self.update_cipher_controls(self.cipher.currentText())
+        for widget, template in self._templated:
+            widget.setText(tr(template).format(version=VERSION_TAG))
+        self.update_cipher_controls()
+        self.render_compare()
 
     def switch_page(self, index):
         self.stack.setCurrentIndex(index)
@@ -1006,23 +764,25 @@ class CryptoLab(QMainWindow):
         layout = QVBoxLayout(page)
         layout.setContentsMargins(0, 0, 10, 0)
         layout.setSpacing(13)
-        layout.addWidget(label(eyebrow, "Eyebrow"))
+        layout.addWidget(self.tlabel(eyebrow, "Eyebrow"))
         layout.addWidget(label(title, "PageTitle"))
         layout.addWidget(label(desc, "Muted"))
         return page, layout
 
     def dashboard_page(self):
-        page, layout = self.shell("CONTROL CENTER / BETA.3", "Welcome to CryptoLab.", "A local workspace for cryptography experiments and code inspection.")
+        page, layout = self.shell("CONTROL CENTER / {version}", "Welcome to CryptoLab.", "A local workspace for cryptography experiments and code inspection.")
         grid = QGridLayout()
-        for i, (num, caption) in enumerate([("05", "LAB MODULES"), ("08+", "HASH OPTIONS"), ("BETA.3", "RELEASE")]):
+        for i, (num, caption) in enumerate([("05", "LAB MODULES"), ("08+", "HASH OPTIONS"), (VERSION_TAG, "RELEASE")]):
             box, b = card()
             b.addWidget(label(num, "Metric"))
             b.addWidget(label(caption, "Eyebrow"))
             grid.addWidget(box, 0, i)
         layout.addLayout(grid)
         box, b = card()
-        b.addWidget(label("WHAT'S NEW IN BETA.3", "Eyebrow"))
-        b.addWidget(label("More classical ciphers, modern authenticated encryption (optional dependency), additional hash functions and password KDFs, key formats, plus Python bytecode inspection.", "Muted"))
+        b.addWidget(self.tlabel("WHAT'S NEW IN {version}", "Eyebrow"))
+        b.addWidget(label("• Fixed hashing: MD5, SHA-1, SHA3-256 and SHA3-512 no longer fail.\n• Translations moved to separate JSON files; Chinese and Spanish added.\n• Dialogs, hints and error messages now follow the selected language.", "Muted"))
+        b.addWidget(label("ALSO IN BETA.4", "Eyebrow"))
+        b.addWidget(label("• Key panel with live validation and compatible key generation.\n• Fixed AES-256-GCM, Fernet, XOR and Atbash handling.\n• Larger Enigma settings; Inter font with Noto Sans fallback.", "Muted"))
         b.addWidget(label("AUTHOR", "Eyebrow"))
         b.addWidget(label(f"{AUTHOR}  •  © 2026. All rights reserved.", "Muted"))
         layout.addWidget(box)
@@ -1035,11 +795,24 @@ class CryptoLab(QMainWindow):
 
     @property
     def lang(self):
-        return "uk" if self.language_selector.currentIndex() == 1 else "en"
+        return self.i18n.language
 
     def ui(self, text):
-        """Translate a static UI string into the current language."""
-        return TRANSLATIONS[self.lang].get(text, text)
+        """Translate an interface string into the current language."""
+        return self.i18n.tr(text)
+
+    def msg(self, code, **params):
+        """Message by code (errors, hints, dialogs) in the current language."""
+        return self.i18n.msg(code, **params)
+
+    def canonical_combo(self, combo):
+        """English identifier of the selected combo item, whatever language is shown.
+        Uses the item's position, so no reverse lookup of translated text is needed."""
+        items = self._original_combo_items.get(combo)
+        index = combo.currentIndex()
+        if items and 0 <= index < len(items):
+            return items[index]
+        return combo.currentText()
 
     @staticmethod
     def _enigma_box(items, current):
@@ -1107,7 +880,7 @@ class CryptoLab(QMainWindow):
         b.addWidget(self.enigma_panel)
 
         self.cipher.currentTextChanged.connect(self.update_cipher_controls)
-        self.update_cipher_controls(self.cipher.currentText())
+        self.update_cipher_controls()
         self.enc_input = QTextEdit()
         self.enc_input.setPlaceholderText("Enter text, or Base64 token when decrypting…")
         self.enc_input.setFixedHeight(115)
@@ -1133,15 +906,8 @@ class CryptoLab(QMainWindow):
         layout.addStretch()
         return page
 
-    def canonical_text(self, text):
-        """Return the English internal identifier even when the UI is in Ukrainian."""
-        if self.language_selector.currentIndex() == 1:
-            reverse = {translated: original for original, translated in TRANSLATIONS["uk"].items()}
-            return reverse.get(text, text)
-        return text
-
-    def update_cipher_controls(self, method):
-        method = self.canonical_text(method)
+    def update_cipher_controls(self, *_):
+        method = self.current_method()
         self.caesar_shift_label.setVisible(method == M_CAESAR)
         self.caesar_shift.setVisible(method == M_CAESAR)
         self.enigma_panel.setVisible(method == M_ENIGMA)
@@ -1177,7 +943,7 @@ class CryptoLab(QMainWindow):
                 parse_plugboard(self.enigma_plugboard.text())
             except CryptoError as exc:
                 error = exc
-        self.enigma_warn.setText("⚠ " + msg(error.code, self.lang, **error.params) if error else "")
+        self.enigma_warn.setText("⚠ " + self.msg(error.code, **error.params) if error else "")
         self.enigma_warn.setVisible(error is not None)
 
     def run_cipher(self, encrypt):
@@ -1188,16 +954,16 @@ class CryptoLab(QMainWindow):
                 raise CryptoError("input.empty")
             self.enc_output.setPlainText(self._apply_cipher(method, text, encrypt))
         except CryptoError as exc:
-            self._show_error(msg(exc.code, self.lang, **exc.params))
+            self._show_error(self.msg(exc.code, **exc.params))
         except Exception as exc:
-            self._show_error(msg("op.unexpected", self.lang, detail=str(exc) or exc.__class__.__name__))
+            self._show_error(self.msg("op.unexpected", detail=str(exc) or exc.__class__.__name__))
 
     def current_method(self):
-        return self.canonical_text(self.cipher.currentText())
+        return self.canonical_combo(self.cipher)
 
     def _show_error(self, text):
         self.enc_output.clear()  # never leave a stale result next to an error
-        QMessageBox.warning(self, self.ui("Operation failed"), text)
+        QMessageBox.warning(self, self.msg("dialog.operation_failed"), text)
 
     def _apply_cipher(self, method, text, encrypt):
         if method == M_CAESAR:
@@ -1266,29 +1032,35 @@ class CryptoLab(QMainWindow):
         return page
 
     def make_hash(self):
-        name = self.canonical_text(self.hash_alg.currentText()).lower().replace("-", "")
-        data = self.hash_input.toPlainText().encode()
+        algorithm = self.canonical_combo(self.hash_alg)
         try:
-            if name == "blake2b":
-                digest = hashlib.blake2b(data).hexdigest()
-            elif name == "blake2s":
-                digest = hashlib.blake2s(data).hexdigest()
-            else:
-                digest = hashlib.new(name, data).hexdigest()
-            self.hash_output.setText(digest)
+            digest = compute_digest(algorithm, self.hash_input.toPlainText().encode("utf-8"))
+        except CryptoError as exc:
+            QMessageBox.warning(self, self.msg("dialog.hash_error"), self.msg(exc.code, **exc.params))
+            return
         except Exception as exc:
-            QMessageBox.warning(self, "Hash error", str(exc))
+            QMessageBox.warning(self, self.msg("dialog.hash_error"), str(exc))
+            return
+        self.hash_output.setText(digest)
 
     def compare_hashes(self):
         a, b = self.compare_a.text().strip().lower(), self.compare_b.text().strip().lower()
         if not a or not b:
-            self.compare_result.setText("Enter both digests.")
+            self._compare_state = "enter_both"
         elif secrets.compare_digest(a, b):
-            self.compare_result.setText("✓ MATCH — digests are identical.")
-            self.compare_result.setStyleSheet("color:#5de0bd;font-weight:700;")
+            self._compare_state = "match"
         else:
-            self.compare_result.setText("✕ NO MATCH — digests differ.")
-            self.compare_result.setStyleSheet("color:#ff9b9b;font-weight:700;")
+            self._compare_state = "no_match"
+        self.render_compare()
+
+    def render_compare(self):
+        """Show the comparison result in the current language (also re-run on language change)."""
+        state = self._compare_state
+        if state is None:
+            return
+        self.compare_result.setText(self.msg("compare." + state))
+        self.compare_result.setStyleSheet({"match": "color:#5de0bd;font-weight:700;",
+                                           "no_match": "color:#ff9b9b;font-weight:700;"}.get(state, ""))
 
     def password_page(self):
         page, layout = self.shell("PASSWORD SECURITY / 03", "Password laboratory", "Derive password hashes using salts and configurable key-derivation algorithms.")
@@ -1326,10 +1098,10 @@ class CryptoLab(QMainWindow):
     def make_password_hash(self):
         password = self.password_input.text()
         if not password:
-            QMessageBox.information(self, "Missing input" if self.language_selector.currentIndex() == 0 else "Немає вхідних даних", "Enter a sample password first." if self.language_selector.currentIndex() == 0 else "Спочатку введіть тестовий пароль.")
+            QMessageBox.information(self, self.msg("dialog.missing_input"), self.msg("password.empty"))
             return
         salt = secrets.token_bytes(16)
-        name = self.canonical_text(self.kdf.currentText())
+        name = self.canonical_combo(self.kdf)
         try:
             if name == "PBKDF2-HMAC-SHA256":
                 derived = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 600_000, dklen=32)
@@ -1343,9 +1115,9 @@ class CryptoLab(QMainWindow):
             self.salt_output.setText(salt.hex())
             self.password_hash_output.setPlainText(derived.hex())
         except ImportError:
-            QMessageBox.warning(self, "Missing package", "Install Argon2 support with: python3 -m pip install argon2-cffi")
+            QMessageBox.warning(self, self.msg("dialog.missing_package"), self.msg("argon2.missing"))
         except Exception as exc:
-            QMessageBox.warning(self, "KDF error", str(exc))
+            QMessageBox.warning(self, self.msg("dialog.kdf_error"), str(exc))
 
     def key_page(self):
         page, layout = self.shell("RANDOMNESS / 04", "Key generator", "Generate random material using Python's cryptographically secure random source.")
@@ -1383,8 +1155,8 @@ class CryptoLab(QMainWindow):
         return page
 
     def make_key(self):
-        kind = self.canonical_text(self.key_type.currentText())
-        fmt = self.canonical_text(self.key_format.currentText())
+        kind = self.canonical_combo(self.key_type)
+        fmt = self.canonical_combo(self.key_format)
         if kind == "Random text":
             alphabet = string.ascii_letters + string.digits
             if self.key_symbols.isChecked():
@@ -1422,25 +1194,27 @@ class CryptoLab(QMainWindow):
         return page
 
     def open_pyc(self):
-        path, _ = QFileDialog.getOpenFileName(self, "Select Python bytecode", "", "Python bytecode (*.pyc);;All files (*)")
+        path, _ = QFileDialog.getOpenFileName(self, self.msg("dialog.select_bytecode"), "", self.msg("dialog.pyc_filter"))
         if not path:
             return
         try:
             with open(path, "rb") as f:
                 raw = f.read()
             if len(raw) < 16:
-                raise ValueError("File is too short to be a standard modern .pyc file.")
+                raise CryptoError("bytecode.too_short")
             code_obj = marshal.loads(raw[16:])
             if not isinstance(code_obj, types.CodeType):
-                raise ValueError("The file does not contain a recognized Python code object.")
+                raise CryptoError("bytecode.not_code")
             lines = [f"File: {os.path.basename(path)}", f"Python runtime: {sys.version.split()[0]}", f"Module: {code_obj.co_name}", f"Constants: {code_obj.co_consts!r}", f"Names: {code_obj.co_names!r}", "", "DISASSEMBLY", "-" * 60]
             lines.append(dis.Bytecode(code_obj).dis())
             for const in code_obj.co_consts:
                 if isinstance(const, types.CodeType):
                     lines.extend(["", f"NESTED CODE OBJECT: {const.co_name}", "-" * 60, dis.Bytecode(const).dis()])
             self.code_output.setPlainText("\n".join(lines))
+        except CryptoError as exc:
+            QMessageBox.warning(self, self.msg("dialog.bytecode_error"), f"{self.msg(exc.code, **exc.params)}\n\n{self.msg('bytecode.hint')}")
         except Exception as exc:
-            QMessageBox.warning(self, "Could not inspect bytecode", f"{exc}\n\nПереконайся, що .pyc створений сумісною версією Python.")
+            QMessageBox.warning(self, self.msg("dialog.bytecode_error"), f"{exc}\n\n{self.msg('bytecode.hint')}")
 
 def main():
     app = QApplication(sys.argv)
